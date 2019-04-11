@@ -1,1 +1,1 @@
-include ':app', ':xsensor'
+include ':xsensor'

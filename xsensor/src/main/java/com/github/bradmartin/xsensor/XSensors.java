@@ -53,8 +53,11 @@ public class XSensors implements SensorEventListener {
 
             int sensorType = event.sensor.getType();
             // depending on the the sensor type set the result to return in the listener
-            if (sensorType == Sensor.TYPE_LINEAR_ACCELERATION || sensorType == Sensor.TYPE_GRAVITY
-                    || sensorType == Sensor.TYPE_GYROSCOPE || sensorType == Sensor.TYPE_MAGNETIC_FIELD) {
+            if (sensorType == Sensor.TYPE_ACCELEROMETER
+                    || sensorType == Sensor.TYPE_LINEAR_ACCELERATION
+                    || sensorType == Sensor.TYPE_GRAVITY
+                    || sensorType == Sensor.TYPE_GYROSCOPE
+                    || sensorType == Sensor.TYPE_MAGNETIC_FIELD) {
                 sensorData.put("x", event.values[0]);
                 sensorData.put("y", event.values[1]);
                 sensorData.put("z", event.values[2]);
@@ -75,6 +78,34 @@ public class XSensors implements SensorEventListener {
                 sensorData.put("proximity", event.values[0]);
             } else if (sensorType == Sensor.TYPE_LOW_LATENCY_OFFBODY_DETECT) {
                 sensorData.put("state", event.values[0]);
+            } else if (sensorType == Sensor.TYPE_HEART_RATE) {
+                sensorData.put("heart_rate", event.values[0]);
+            } else if (sensorType == Sensor.TYPE_HEART_BEAT) {
+                sensorData.put("confidence", event.values[0]);
+            } else if (sensorType == Sensor.TYPE_LIGHT) {
+                sensorData.put("light_level", event.values[0]);
+            } else if (sensorType == Sensor.TYPE_PRESSURE) {
+                sensorData.put("pressure", event.values[0]);
+            } else if (sensorType == Sensor.TYPE_RELATIVE_HUMIDITY) {
+                sensorData.put("humidity", event.values[0]); // Relative ambient air humidity in percent
+            } else if (sensorType == Sensor.TYPE_AMBIENT_TEMPERATURE) {
+                sensorData.put("temp", event.values[0]); // ambient (room) temperature in degree Celsius
+            } else if (sensorType == Sensor.TYPE_POSE_6DOF) {
+                sensorData.put("x", event.values[0]);
+                sensorData.put("y", event.values[1]);
+                sensorData.put("z", event.values[2]);
+                sensorData.put("cos", event.values[3]);
+                sensorData.put("x_translation", event.values[4]);
+                sensorData.put("y_translation", event.values[5]);
+                sensorData.put("z_translation", event.values[6]);
+                sensorData.put("x_rotation", event.values[7]);
+                sensorData.put("y_rotation", event.values[8]);
+                sensorData.put("z_rotation", event.values[9]);
+                sensorData.put("cos_rotation", event.values[10]);
+                sensorData.put("x_delta_translation", event.values[11]);
+                sensorData.put("y_delta_translation", event.values[12]);
+                sensorData.put("z_delta_translation", event.values[13]);
+                sensorData.put("sequence_number", event.values[14]);
             }
 
             dataBag.data = sensorData;

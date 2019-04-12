@@ -12,6 +12,7 @@ import android.util.Log;
 import com.google.gson.Gson;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class XSensors implements SensorEventListener {
 
@@ -157,6 +158,14 @@ public class XSensors implements SensorEventListener {
     public void stopSensor(Sensor sensor) {
         if (sensor != null) {
             mSensorManager.unregisterListener(this, sensor);
+        }
+    }
+
+    public List<Sensor> getDeviceSensors() {
+        if (mSensorManager != null) {
+            return mSensorManager.getSensorList(Sensor.TYPE_ALL);
+        } else {
+            return null;
         }
     }
 

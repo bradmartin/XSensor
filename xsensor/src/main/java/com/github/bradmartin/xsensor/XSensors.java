@@ -43,6 +43,10 @@ public class XSensors implements SensorEventListener {
         Log.d(TAG, "Listener: " + this.mListener);
     }
 
+    public static boolean supportsFIFO(Sensor sensor) {
+        return sensor.getFifoMaxEventCount() != 0;
+    }
+
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (mListener != null) {

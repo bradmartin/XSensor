@@ -150,6 +150,30 @@ public class XSensors implements SensorEventListener {
         }
     }
 
+    public Sensor startSensorWithReportLatency(int sensor, int sensorDelay, int maxReportLatencyUs) {
+        if (mSensorManager == null) { // BOO NO SENSOR MANAGER
+            Log.d(TAG, "XSensors does not have the SensorManager. Will return null since no sensor can be registered.");
+            return null;
+        }
+
+        // here we have the SensorManager so try to get the sensor requested
+        Sensor defaultSensor = mSensorManager.getDefaultSensor(sensor);
+        // if we have the sensor then register the listener
+        if (defaultSensor != null) {
+            // make sure the sensor uses a FIFO if not then register it on the background thread
+            if (defaultSensor.getFifoMaxEventCount() == 0) {
+                Log.d(TAG, "Registering " + defaultSensor.getStringType() + " with the background thread since it does not support FIFO.");
+                mSensorManager.registerListener(this, defaultSensor, sensorDelay, mSensorHandler);
+            } else {
+                mSensorManager.registerListener(this, defaultSensor, sensorDelay, maxReportLatencyUs);
+            }
+            return defaultSensor; // YAY SENSOR REGISTERED
+        } else {
+            Log.d(TAG, "SensorManager unable to get the default sensor for type: " + sensor);
+            return null; // BOO SENSOR NOT REGISTERED
+        }
+    }
+
     /**
      * Stops the sensor by unregistering.
      *

@@ -18,15 +18,23 @@ public class XSensors implements SensorEventListener {
 
     private static String TAG = "XSensor";
 
+    private Handler mSensorHandler;
     private XSensorListener mListener;
     private SensorManager mSensorManager;
-    private Handler mSensorHandler;
+
+    private boolean useLiteDataBagForSensorData;
 
     /*
      * Constructor. Since the class does not extend Application or Activity, we need
      * to context of the running process/app.
      */
-    public XSensors(Context ctx) {
+    public XSensors(Context ctx, boolean liteData) {
+        // if liteData argument is provided then the sensor event data will use the LiteDataBag
+        // if not then we use the HeavyDataBag to return in the sensor changed events
+        if (!liteData) {
+            useLiteDataBagForSensorData = false;
+        }
+
         // Get the SensorManager
         mSensorManager = (SensorManager) ctx.getSystemService(Context.SENSOR_SERVICE);
         Log.d(TAG, "SensorManager: " + this.mSensorManager);
@@ -50,10 +58,8 @@ public class XSensors implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (mListener != null) {
-            BagOfSensorData dataBag = new BagOfSensorData();
-            dataBag.sensor = event.sensor.getStringType();
-            dataBag.timestamp = event.timestamp;
-
+            LiteDataBag liteDataBag = null;
+            HeavyDataBag heavyDataBag = null;
             HashMap<String, Float> sensorData = new HashMap<>();
 
             int sensorType = event.sensor.getType();
@@ -113,10 +119,25 @@ public class XSensors implements SensorEventListener {
                 sensorData.put("sequence_number", event.values[14]);
             }
 
-            dataBag.data = sensorData;
+            if (useLiteDataBagForSensorData) {
+                liteDataBag = new LiteDataBag();
+                liteDataBag.s = event.sensor.getType();
+                liteDataBag.ts = event.timestamp;
+                liteDataBag.d = sensorData;
+            } else {
+                heavyDataBag = new HeavyDataBag();
+                heavyDataBag.sensor = event.sensor.getStringType();
+                heavyDataBag.timestamp = event.timestamp;
+                heavyDataBag.data = sensorData;
+            }
 
             Gson gson = new Gson();
-            String result = gson.toJson(dataBag);
+            String result;
+            if (useLiteDataBagForSensorData) {
+                result = gson.toJson(liteDataBag);
+            } else {
+                result = gson.toJson(heavyDataBag);
+            }
 
             // send the data to the XSensorListener
             mListener.onSensorChanged(result);
@@ -197,26 +218,18 @@ public class XSensors implements SensorEventListener {
         }
     }
 
-    class BagOfSensorData {
-        /**
-         * Sensor type as string.
-         */
-        private String sensor;
-
-        /**
-         * Sensor event timestamp.
-         */
-        private long timestamp;
-
-        /**
-         * Returns the seconds since Epoch
-         */
-        private long time = System.currentTimeMillis() / 1000;
-
-        private HashMap data;
-
-        BagOfSensorData() {
-            // no-args constructor
+    /**
+     * Flushes the FIFO of all the sensors registered for this listener.
+     *
+     * @return boolean
+     */
+    public boolean flush() {
+        if (mListener != null) {
+            Log.d(TAG, "Flushing the event data for listener: " + mListener);
+            return this.mSensorManager.flush(this.mListener);
+        } else {
+            Log.w(TAG, "No sensor listener set, so unable to flush the data.");
+            return false;
         }
     }
 

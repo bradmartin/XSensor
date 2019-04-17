@@ -31,9 +31,7 @@ public class XSensors implements SensorEventListener {
     public XSensors(Context ctx, boolean liteData) {
         // if liteData argument is provided then the sensor event data will use the LiteDataBag
         // if not then we use the HeavyDataBag to return in the sensor changed events
-        if (!liteData) {
-            useLiteDataBagForSensorData = false;
-        }
+        useLiteDataBagForSensorData = liteData;
 
         // Get the SensorManager
         mSensorManager = (SensorManager) ctx.getSystemService(Context.SENSOR_SERVICE);

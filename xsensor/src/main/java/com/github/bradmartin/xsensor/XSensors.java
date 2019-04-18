@@ -32,6 +32,7 @@ public class XSensors implements SensorEventListener {
         // if liteData argument is provided then the sensor event data will use the LiteDataBag
         // if not then we use the HeavyDataBag to return in the sensor changed events
         useLiteDataBagForSensorData = liteData;
+        Log.d(TAG, "Constructor liteData argument value: " + useLiteDataBagForSensorData);
 
         // Get the SensorManager
         mSensorManager = (SensorManager) ctx.getSystemService(Context.SENSOR_SERVICE);
@@ -119,7 +120,7 @@ public class XSensors implements SensorEventListener {
 
             if (useLiteDataBagForSensorData) {
                 liteDataBag = new LiteDataBag();
-                liteDataBag.s = event.sensor.getType();
+                liteDataBag.s = sensorType;
                 liteDataBag.ts = event.timestamp;
                 liteDataBag.d = sensorData;
             } else {
@@ -130,12 +131,9 @@ public class XSensors implements SensorEventListener {
             }
 
             Gson gson = new Gson();
-            String result;
-            if (useLiteDataBagForSensorData) {
-                result = gson.toJson(liteDataBag);
-            } else {
-                result = gson.toJson(heavyDataBag);
-            }
+            String result = useLiteDataBagForSensorData
+                    ? gson.toJson(liteDataBag)
+                    : gson.toJson(heavyDataBag);
 
             // send the data to the XSensorListener
             mListener.onSensorChanged(result);

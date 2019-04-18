@@ -9,11 +9,6 @@ class HeavyDataBag {
     public String sensor;
 
     /**
-     * Sensor type as int
-     */
-    public int sensorInt;
-
-    /**
      * Sensor event timestamp.
      */
     public long timestamp;

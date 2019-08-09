@@ -163,8 +163,12 @@ public class XSensors implements SensorEventListener {
         Sensor defaultSensor = mSensorManager.getDefaultSensor(sensor);
         // if we have the sensor then register the listener
         if (defaultSensor != null) {
-            mSensorManager.registerListener(this, defaultSensor, sensorDelay, mSensorHandler);
-            return defaultSensor; // YAY SENSOR REGISTERED
+            boolean didRegister = mSensorManager.registerListener(this, defaultSensor, sensorDelay, mSensorHandler);
+            if (didRegister) {
+                return defaultSensor;  // YAY SENSOR REGISTERED
+            } else {
+                return null;
+            }
         } else {
             Log.d(TAG, "SensorManager unable to get the default sensor for type: " + sensor);
             return null; // BOO SENSOR NOT REGISTERED
@@ -184,11 +188,20 @@ public class XSensors implements SensorEventListener {
             // make sure the sensor uses a FIFO if not then register it on the background thread
             if (defaultSensor.getFifoMaxEventCount() == 0) {
                 Log.d(TAG, "Registering " + defaultSensor.getStringType() + " with the background thread since it does not support FIFO.");
-                mSensorManager.registerListener(this, defaultSensor, sensorDelay, mSensorHandler);
+                boolean didRegister = mSensorManager.registerListener(this, defaultSensor, sensorDelay, mSensorHandler);
+                if (didRegister) {
+                    return defaultSensor; // registered
+                } else {
+                    return null;
+                }
             } else {
-                mSensorManager.registerListener(this, defaultSensor, sensorDelay, maxReportLatencyUs);
+                boolean didRegister = mSensorManager.registerListener(this, defaultSensor, sensorDelay, maxReportLatencyUs);
+                if (didRegister) {
+                    return defaultSensor; // registered
+                } else {
+                    return null;
+                }
             }
-            return defaultSensor; // YAY SENSOR REGISTERED
         } else {
             Log.d(TAG, "SensorManager unable to get the default sensor for type: " + sensor);
             return null; // BOO SENSOR NOT REGISTERED

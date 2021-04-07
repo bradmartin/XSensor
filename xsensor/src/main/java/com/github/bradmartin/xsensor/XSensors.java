@@ -50,9 +50,9 @@ public class XSensors implements SensorEventListener {
         Log.d(TAG, "Listener: " + this.mListener);
     }
 
-    public static boolean supportsFIFO(Sensor sensor) {
-        return sensor.getFifoMaxEventCount() != 0;
-    }
+    public static boolean supportsFIFO(Sensor sensor) { return sensor.getFifoMaxEventCount() != 0; }
+
+    public static boolean isWakeUp(Sensor sensor) { return sensor.isWakeUpSensor(); }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
@@ -175,6 +175,15 @@ public class XSensors implements SensorEventListener {
         }
     }
 
+
+    /**
+     * Starts the sensor with the provided sensor reporting delay and report latency.
+     *
+     * @param sensor             [int] - The sensor type.
+     * @param sensorDelay        [int] - The sensory reporting delay.
+     * @param maxReportLatencyUs [int] - Maximum time in microseconds that events can be delayed before being reported to the application.
+     * @return [boolean] - Return true if sensor is registered with the listener.
+     */
     public Sensor startSensorWithReportLatency(int sensor, int sensorDelay, int maxReportLatencyUs) {
         if (mSensorManager == null) { // BOO NO SENSOR MANAGER
             Log.d(TAG, "XSensors does not have the SensorManager. Will return null since no sensor can be registered.");
@@ -183,6 +192,79 @@ public class XSensors implements SensorEventListener {
 
         // here we have the SensorManager so try to get the sensor requested
         Sensor defaultSensor = mSensorManager.getDefaultSensor(sensor);
+        // if we have the sensor then register the listener
+        if (defaultSensor != null) {
+            // make sure the sensor uses a FIFO if not then register it on the background thread
+            if (defaultSensor.getFifoMaxEventCount() == 0) {
+                Log.d(TAG, "Registering " + defaultSensor.getStringType() + " with the background thread since it does not support FIFO.");
+                boolean didRegister = mSensorManager.registerListener(this, defaultSensor, sensorDelay, mSensorHandler);
+                if (didRegister) {
+                    return defaultSensor; // registered
+                } else {
+                    return null;
+                }
+            } else {
+                boolean didRegister = mSensorManager.registerListener(this, defaultSensor, sensorDelay, maxReportLatencyUs);
+                if (didRegister) {
+                    return defaultSensor; // registered
+                } else {
+                    return null;
+                }
+            }
+        } else {
+            Log.d(TAG, "SensorManager unable to get the default sensor for type: " + sensor);
+            return null; // BOO SENSOR NOT REGISTERED
+        }
+    }
+
+    /**
+     * Starts the sensor with the provided sensor reporting delay.
+     *
+     * @param sensor         [int] - The sensor type.
+     * @param sensorDelay    [int] - The sensory reporting delay.
+     * @param isWakeUpSensor [boolean] - Is the sensor a wake-up sensor.
+     * @return [boolean] - Return true if sensor is registered with the listener.
+     */
+    public Sensor startSensor(int sensor, int sensorDelay, boolean isWakeUpSensor) {
+        if (mSensorManager == null) { // BOO NO SENSOR MANAGER
+            Log.d(TAG, "XSensors does not have the SensorManager. Will return null since no sensor can be registered.");
+            return null;
+        }
+
+        // here we have the SensorManager so try to get the sensor requested
+        Sensor defaultSensor = mSensorManager.getDefaultSensor(sensor, isWakeUpSensor);
+        // if we have the sensor then register the listener
+        if (defaultSensor != null) {
+            boolean didRegister = mSensorManager.registerListener(this, defaultSensor, sensorDelay, mSensorHandler);
+            if (didRegister) {
+                return defaultSensor;  // YAY SENSOR REGISTERED
+            } else {
+                return null;
+            }
+        } else {
+            Log.d(TAG, "SensorManager unable to get the default sensor for type: " + sensor);
+            return null; // BOO SENSOR NOT REGISTERED
+        }
+    }
+
+
+    /**
+     * Starts the sensor with the provided sensor reporting delay and report latency.
+     *
+     * @param sensor             [int] - The sensor type.
+     * @param sensorDelay        [int] - The sensory reporting delay.
+     * @param maxReportLatencyUs [int] - Maximum time in microseconds that events can be delayed before being reported to the application.
+     * @param isWakeUpSensor     [boolean] - Is the sensor a wake-up sensor.
+     * @return [boolean] - Return true if sensor is registered with the listener.
+     */
+    public Sensor startSensorWithReportLatency(int sensor, int sensorDelay, int maxReportLatencyUs, boolean isWakeUpSensor) {
+        if (mSensorManager == null) { // BOO NO SENSOR MANAGER
+            Log.d(TAG, "XSensors does not have the SensorManager. Will return null since no sensor can be registered.");
+            return null;
+        }
+
+        // here we have the SensorManager so try to get the sensor requested
+        Sensor defaultSensor = mSensorManager.getDefaultSensor(sensor, isWakeUpSensor);
         // if we have the sensor then register the listener
         if (defaultSensor != null) {
             // make sure the sensor uses a FIFO if not then register it on the background thread
